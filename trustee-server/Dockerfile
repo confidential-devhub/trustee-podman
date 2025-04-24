@@ -1,14 +1,8 @@
-FROM --platform=linux/amd64 docker.io/library/rust:slim
+FROM quay.io/redhat-user-workloads/ose-osc-tenant/trustee/trustee:ce52c99ae4be099bc72e93d68bf521ba41ddbbb6
 
-RUN apt-get update && apt-get install -y curl gpg
-
-RUN curl -fsSL https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | \
-    gpg --dearmor --output /usr/share/keyrings/intel-sgx.gpg && \
-    echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/intel-sgx.gpg] https://download.01.org/intel-sgx/sgx_repo/ubuntu jammy main' | \
-    tee /etc/apt/sources.list.d/intel-sgx.list
-
-RUN apt-get update && apt-get install -y libtss2-esys-3.0.2-0 libtss2-tctildr0 libsgx-dcap-quote-verify-dev
-COPY ./kbs-client /kbs-client
-COPY ./kbs /kbs
+COPY ./kbs-config.toml /etc/kbs-config/kbs-config.toml
 COPY ./sgx_default_qcnl.conf /etc/sgx_default_qcnl.conf
-COPY ./policy.rego /opt/confidential-containers/opa/policy.rego
+COPY ./default.rego /opt/confidential-containers/attestation-service/policies/opa/default.rego
+COPY ./reference-values.json /opt/confidential-containers/rvps/reference-values/reference-values.json
+
+RUN mkdir -p /opt/confidential-containers/kbs/repository/default
